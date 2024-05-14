@@ -1,6 +1,5 @@
 #include "doctest/doctest.h"
-#include "file_input_tape.h"
-#include "file_output_tape.h"
+#include "file_tape.h"
 #include "test_util.h"
 #include "tmp_file.h"
 
@@ -8,23 +7,22 @@
 #include <vector>
 
 TEST_CASE("Tape simple test") {
-
     auto data = generateRandomInts();
 
     TmpFile testFile;
-    auto outputTape = tape::FileOutputTape::create(testFile.get_name());
+    auto tape = tape::FileTape::create(testFile.get_name());
     for (const auto &item : data) {
-        outputTape->write(item);
-        CHECK(outputTape->moveForward());
+        tape->write(item);
+        CHECK(tape->moveForward());
     }
 
-    auto inputTape = tape::FileInputTape::create(testFile.get_name());
+    tape->resetTape();
     int elementNum = 0;
-    while (inputTape->hasNext()) {
-        std::int32_t value = inputTape->read();
+    while (tape->hasNext()) {
+        std::int32_t value = tape->read();
         CHECK(elementNum < data.size());
         CHECK(value == data[elementNum]);
-        CHECK(inputTape->moveForward());
+        CHECK(tape->moveForward());
         elementNum++;
     }
 
@@ -32,36 +30,35 @@ TEST_CASE("Tape simple test") {
 }
 
 TEST_CASE("Tape move test") {
-
     auto data = generateRandomInts();
 
     TmpFile testFile;
-    auto outputTape = tape::FileOutputTape::create(testFile.get_name());
+    auto tape = tape::FileTape::create(testFile.get_name());
     for (const auto &item : data) {
-        outputTape->write(item);
-        CHECK(outputTape->moveForward());
+        tape->write(item);
+        CHECK(tape->moveForward());
     }
 
-    auto inputTape = tape::FileInputTape::create(testFile.get_name());
-    CHECK(inputTape->hasNext());
-    CHECK(!inputTape->moveBackward());
+    tape->resetTape();
+    CHECK(tape->hasNext());
+    CHECK(!tape->moveBackward());
 
-    inputTape->moveForward();
-    inputTape->moveBackward();
-    CHECK(inputTape->read() == data[0]);
+    tape->moveForward();
+    tape->moveBackward();
+    CHECK(tape->read() == data[0]);
 
     // check read dont move head of tape
-    CHECK(inputTape->read() == data[0]);
-    CHECK(inputTape->read() == data[0]);
+    CHECK(tape->read() == data[0]);
+    CHECK(tape->read() == data[0]);
 
     for (int i = 0; i < data.size(); i++) {
-        CHECK(inputTape->moveForward());
+        CHECK(tape->moveForward());
     }
 
-    CHECK(!inputTape->hasNext());
-    CHECK(!inputTape->moveForward());
+    CHECK(!tape->hasNext());
+    CHECK(!tape->moveForward());
 
-    inputTape->resetTape();
-    CHECK(inputTape->hasNext());
-    CHECK(inputTape->read() == data[0]);
+    tape->resetTape();
+    CHECK(tape->hasNext());
+    CHECK(tape->read() == data[0]);
 }

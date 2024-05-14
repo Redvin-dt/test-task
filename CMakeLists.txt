@@ -13,8 +13,7 @@ include(Doctest)
 include(Yaml)
 
 set(SOURCES
-    src/file_input_tape.cpp
-    src/file_output_tape.cpp
+    src/file_tape.cpp
     src/sorter.cpp
     src/tmp_file.cpp
     src/config.cpp

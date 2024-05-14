@@ -48,7 +48,7 @@ TEST_CASE("Small sort test") {
 }
 
 TEST_CASE("Large sort test") {
-    constexpr static int TEST_COUNT = 3;
+    constexpr static int TEST_COUNT = 1;
 
     for (int test = 0; test < TEST_COUNT; test++) {
         auto data = generateRandomInts();

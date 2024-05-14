@@ -7,8 +7,7 @@
 
 int main(int argc, char *argv[]) {
     if (argc != 3) {
-        std::cout << "incorect number of arguments, excepted two, buf find "
-                  << argc - 1 << '\n'; // TODO: rewrite on usage ...
+        std::cout << "Usage: <input file> <output file>\n";
         return 0;
     }
 
