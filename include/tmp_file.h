@@ -9,7 +9,6 @@ class TmpFile {
 
     TmpFile(const TmpFile &) = delete;
     TmpFile(TmpFile &&);
-
     TmpFile &operator=(const TmpFile &) = delete;
     TmpFile &operator=(TmpFile &&);
 
@@ -18,5 +17,5 @@ class TmpFile {
     std::string get_name();
 
   private:
-    std::string filename;
+    std::string filename_;
 };

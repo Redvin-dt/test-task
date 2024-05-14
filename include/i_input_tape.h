@@ -7,8 +7,9 @@ namespace tape {
 class IInputTape {
   public:
     virtual std::int32_t read() = 0;
-    virtual bool go_next() = 0;   // TODO: rename, add go back?
-    virtual bool has_value() = 0; // TODO: mb remove
+    virtual bool moveForward() = 0;
+    virtual bool moveBackward() = 0;
+    virtual bool hasNext() = 0;
     virtual ~IInputTape() = default;
 };
 

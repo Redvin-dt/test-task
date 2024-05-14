@@ -1,15 +1,25 @@
 cmake_minimum_required(VERSION 3.25)
 
-project (TestTask)
+project (TestTask LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
+option(ENABLE_DOCTESTS "Include tests in the library. Setting this to OFF will remove all doctest related code.
+                        Tests in tests/*.cpp will still be enabled." ON)
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+include(CTest)
+include(Doctest)
 
 set(SOURCES
     src/file_input_tape.cpp
     src/file_output_tape.cpp
     src/sorter.cpp
     src/tmp_file.cpp
+)
+
+set(TESTFILES
+    tests/main.cpp
 )
 
 set(LIBRARY_NAME engine)
@@ -20,6 +30,7 @@ target_include_directories(${LIBRARY_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
 add_executable(main app/main.cpp)
 target_link_libraries(main PRIVATE ${LIBRARY_NAME})
+target_link_libraries(${LIBRARY_NAME} PUBLIC doctest)
 
 set_target_properties(
     ${LIBRARY_NAME} main
@@ -28,3 +39,5 @@ set_target_properties(
         CXX_STANDARD_REQUIRED YES
         CXX_EXTENSIONS NO
 )
+
+add_subdirectory(test)

@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <fstream>
+#include <istream>
 #include <memory>
 #include <optional>
 #include <string>
@@ -19,14 +20,20 @@ class FileInputTape : public IInputTape {
     FileInputTape &operator=(const FileInputTape &) = delete;
     FileInputTape &operator=(FileInputTape &&) = default;
 
+    ~FileInputTape();
+
     static std::shared_ptr<IInputTape> create(const std::string &filename);
 
-    virtual bool go_next() override;
     virtual std::int32_t read() override;
-    virtual bool has_value() override;
+    virtual bool moveForward() override;
+    virtual bool moveBackward() override;
+    virtual bool hasNext() override;
 
   private:
-    std::optional<std::int32_t> last_int;
+    using VALUE_TYPE = std::int32_t;
+
+    bool isEof();
+
     std::ifstream fStream_;
 };
 

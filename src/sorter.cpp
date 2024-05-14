@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <fstream>
 #include <future>
 #include <iostream>
 #include <memory>
@@ -16,46 +17,24 @@
 
 namespace {
 
-constexpr char FILENAME_TEMPLATE[25] =
-    "/tmp/tape_storage.XXXXXX"; // TODO: mb remove
-
-TmpFile merge_sort(std::vector<TmpFile> &&files) { // TODO: mb add more func
-    if (files.size() == 1) {
-        return std::move(files.back());
-    }
-
-    std::vector<TmpFile> first_part;
-    std::vector<TmpFile> second_part;
-
-    for (int i = 0; i < files.size(); i++) {
-        if (i < files.size() / 2) {
-            first_part.emplace_back(std::move(files[i]));
-        } else {
-            second_part.emplace_back(std::move(files[i]));
-        }
-    }
-
-    TmpFile first =
-        merge_sort(std::move(first_part)); // TODO: rename and mb parralel
-    TmpFile second = merge_sort(std::move(second_part));
-
+TmpFile merge(TmpFile first, TmpFile second) {
     TmpFile result;
     auto firstTape = tape::FileInputTape::create(first.get_name());
     auto secondTape = tape::FileInputTape::create(second.get_name());
     auto resultTape = tape::FileOutputTape::create(result.get_name());
 
-    while (firstTape->has_value() || secondTape->has_value()) {
-        if (!secondTape->has_value()) {
+    while (firstTape->hasNext() || secondTape->hasNext()) {
+        if (!secondTape->hasNext()) {
             resultTape->write(firstTape->read());
-            resultTape->go_next();
-            firstTape->go_next();
+            resultTape->moveForward();
+            firstTape->moveForward();
             continue;
         }
 
-        if (!firstTape->has_value()) {
+        if (!firstTape->hasNext()) {
             resultTape->write(secondTape->read());
-            resultTape->go_next();
-            secondTape->go_next();
+            resultTape->moveForward();
+            secondTape->moveForward();
             continue;
         }
 
@@ -64,19 +43,42 @@ TmpFile merge_sort(std::vector<TmpFile> &&files) { // TODO: mb add more func
 
         if (firstValue < secondValue) {
             resultTape->write(firstValue);
-            resultTape->go_next();
-            firstTape->go_next();
+            resultTape->moveForward();
+            firstTape->moveForward();
         } else {
             resultTape->write(secondValue);
-            resultTape->go_next();
-            secondTape->go_next();
+            resultTape->moveForward();
+            secondTape->moveForward();
         }
     }
 
     return result;
 }
 
-TmpFile dump_buffer(std::vector<std::int32_t> &buffer) { // TODO: mb rename
+TmpFile mergeSort(std::vector<TmpFile> &&files) { // TODO: mb add more func
+    if (files.size() == 1) {
+        return std::move(files.back());
+    }
+
+    std::vector<TmpFile> firstPart;
+    std::vector<TmpFile> secondPart;
+
+    for (int i = 0; i < files.size(); i++) {
+        if (i < files.size() / 2) {
+            firstPart.emplace_back(std::move(files[i]));
+        } else {
+            secondPart.emplace_back(std::move(files[i]));
+        }
+    }
+
+    TmpFile first =
+        mergeSort(std::move(firstPart)); // TODO: rename and mb parralel
+    TmpFile second = mergeSort(std::move(secondPart));
+
+    return merge(std::move(first), std::move(second));
+}
+
+TmpFile dumpBuffer(std::vector<std::int32_t> &buffer) { // TODO: mb rename
     TmpFile result;
     std::sort(buffer.begin(), buffer.end());
 
@@ -84,7 +86,7 @@ TmpFile dump_buffer(std::vector<std::int32_t> &buffer) { // TODO: mb rename
 
     for (const auto &item : buffer) {
         output_tape->write(item);
-        output_tape->go_next();
+        output_tape->moveForward();
     }
 
     buffer.clear();
@@ -94,38 +96,36 @@ TmpFile dump_buffer(std::vector<std::int32_t> &buffer) { // TODO: mb rename
 
 } // namespace
 
-void sort(const std::string &input_filename,
-          const std::string &output_filename) {
+void sort(const std::string &inputFilename, const std::string &outputFilename) {
 
     constexpr static int BUFFER_SIZE = 8192 / sizeof(std::int32_t);
 
-    auto input_tape = tape::FileInputTape::create(input_filename);
-    auto output_tape = tape::FileOutputTape::create(output_filename);
+    std::ifstream inputStream(inputFilename);
+    std::ofstream outputStream(outputFilename);
 
     std::vector<std::int32_t> buffer;
     buffer.reserve(BUFFER_SIZE);
 
-    std::vector<TmpFile> tmp_files;
-    while (input_tape->has_value()) {
-        buffer.emplace_back(input_tape->read());
+    std::vector<TmpFile> tmpFiles;
+    std::int32_t value;
+    while (inputStream >> value) {
+        buffer.emplace_back(value);
 
         if (buffer.size() == BUFFER_SIZE) {
-            tmp_files.emplace_back(dump_buffer(buffer));
+            tmpFiles.emplace_back(dumpBuffer(buffer));
         }
-
-        input_tape->go_next();
     }
 
     if (!buffer.empty()) {
-        tmp_files.emplace_back(dump_buffer(buffer));
+        tmpFiles.emplace_back(dumpBuffer(buffer));
     }
 
-    auto result = merge_sort(std::move(tmp_files));
+    auto result = mergeSort(std::move(tmpFiles));
     auto resultTape = tape::FileInputTape::create(result.get_name());
 
-    while (resultTape->has_value()) {
-        output_tape->write(resultTape->read());
-        output_tape->go_next();
-        resultTape->go_next();
+    while (resultTape->hasNext()) {
+        outputStream << resultTape->read() << ' ';
+        resultTape->moveForward();
     }
+    outputStream << '\n';
 }

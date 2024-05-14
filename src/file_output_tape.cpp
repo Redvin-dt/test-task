@@ -1,15 +1,15 @@
 #include "file_output_tape.h"
+#include <ios>
+#include <iostream>
 
 namespace tape {
 
 FileOutputTape::FileOutputTape(const std::string &filename)
-    : fStream_(filename, std::ios::trunc), write_buf() {}
+    : fStream_(filename, std::ios::trunc | std::ios::binary) {}
 
 FileOutputTape::~FileOutputTape() {
-    if (write_buf.has_value()) {
-        fStream_ << write_buf.value() << ' ';
-    }
-    fStream_ << '\n';
+    fStream_.flush();
+    fStream_.close();
 }
 
 std::shared_ptr<IOutputTape>
@@ -17,20 +17,25 @@ FileOutputTape::create(const std::string &filename) {
     return std::make_shared<FileOutputTape>(filename);
 }
 
-bool FileOutputTape::go_next() {
-    write_to_file();
-    write_buf.reset();
+void FileOutputTape::write(std::int32_t value) {
+    fStream_.write(reinterpret_cast<char *>(&value), sizeof(value));
+    moveBackward();
+}
+
+bool FileOutputTape::moveForward() {
+    if (fStream_.eof()) { // TODO: do smth with eof
+        return false;
+    }
+    fStream_.seekp(sizeof(VALUE_TYPE), std::ios_base::cur);
     return true;
 }
 
-void FileOutputTape::write(std::int32_t value) { write_buf.emplace(value); }
-
-void FileOutputTape::write_to_file() {
-    if (write_buf.has_value()) {
-        fStream_ << write_buf.value() << ' ';
-    } else {
-        fStream_ << 0 << ' ';
+bool FileOutputTape::moveBackward() {
+    if (fStream_.tellp() == 0) {
+        return false;
     }
+    fStream_.seekp(-sizeof(VALUE_TYPE), std::ios_base::cur);
+    return true;
 }
 
 } // namespace tape

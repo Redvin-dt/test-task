@@ -22,13 +22,13 @@ class FileOutputTape : public IOutputTape {
 
     static std::shared_ptr<IOutputTape> create(const std::string &filename);
 
-    virtual bool go_next() override;
     virtual void write(std::int32_t value) override;
+    virtual bool moveForward() override;
+    virtual bool moveBackward() override;
 
   private:
-    void write_to_file();
+    using VALUE_TYPE = std::int32_t;
 
-    std::optional<std::int32_t> write_buf; // TODO: rename
     std::ofstream fStream_;
 };
 
