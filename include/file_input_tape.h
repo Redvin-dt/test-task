@@ -1,5 +1,6 @@
 #pragma once
 
+#include "config.h"
 #include "i_input_tape.h"
 
 #include <cstddef>
@@ -27,6 +28,7 @@ class FileInputTape : public IInputTape {
     virtual std::int32_t read() override;
     virtual bool moveForward() override;
     virtual bool moveBackward() override;
+    virtual void resetTape() override;
     virtual bool hasNext() override;
 
   private:
@@ -35,6 +37,7 @@ class FileInputTape : public IInputTape {
     bool isEof();
 
     std::ifstream fStream_;
+    Config *config_;
 };
 
 } // namespace tape

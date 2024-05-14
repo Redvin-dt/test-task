@@ -1,5 +1,6 @@
 #pragma once
 
+#include "config.h"
 #include "i_output_tape.h"
 
 #include <fstream>
@@ -25,11 +26,13 @@ class FileOutputTape : public IOutputTape {
     virtual void write(std::int32_t value) override;
     virtual bool moveForward() override;
     virtual bool moveBackward() override;
+    virtual void resetTape() override;
 
   private:
     using VALUE_TYPE = std::int32_t;
 
     std::ofstream fStream_;
+    Config *config_;
 };
 
 } // namespace tape

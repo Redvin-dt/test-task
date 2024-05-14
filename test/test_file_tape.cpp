@@ -46,6 +46,10 @@ TEST_CASE("Tape move test") {
     CHECK(inputTape->hasNext());
     CHECK(!inputTape->moveBackward());
 
+    inputTape->moveForward();
+    inputTape->moveBackward();
+    CHECK(inputTape->read() == data[0]);
+
     // check read dont move head of tape
     CHECK(inputTape->read() == data[0]);
     CHECK(inputTape->read() == data[0]);
@@ -56,4 +60,8 @@ TEST_CASE("Tape move test") {
 
     CHECK(!inputTape->hasNext());
     CHECK(!inputTape->moveForward());
+
+    inputTape->resetTape();
+    CHECK(inputTape->hasNext());
+    CHECK(inputTape->read() == data[0]);
 }

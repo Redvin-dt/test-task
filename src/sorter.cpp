@@ -12,6 +12,7 @@
 #include <future>
 #include <iostream>
 #include <memory>
+#include <thread>
 #include <unistd.h>
 #include <vector>
 
@@ -71,9 +72,15 @@ TmpFile mergeSort(std::vector<TmpFile> &&files) { // TODO: mb add more func
         }
     }
 
-    TmpFile first =
-        mergeSort(std::move(firstPart)); // TODO: rename and mb parralel
+    auto threadFunc = [&]() {
+        TmpFile first =
+            mergeSort(std::move(firstPart)); // TODO: rename and mb parralel
+        return first;
+    };
+
+    auto future = std::async(threadFunc);
     TmpFile second = mergeSort(std::move(secondPart));
+    TmpFile first = future.get();
 
     return merge(std::move(first), std::move(second));
 }
