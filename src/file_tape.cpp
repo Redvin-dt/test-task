@@ -27,9 +27,6 @@ void FileTape::write(std::int32_t value) {
 
 std::int32_t FileTape::read() {
     std::this_thread::sleep_for(config_->getReadDelay());
-    if (isEof()) {
-        return 0;
-    }
 
     std::int32_t result = 0;
     fStream_.read(reinterpret_cast<char *>(&result), sizeof(result));
@@ -37,27 +34,19 @@ std::int32_t FileTape::read() {
     return result;
 }
 
-bool FileTape::moveForward() {
+void FileTape::moveForward() {
     std::this_thread::sleep_for(config_->getMoveDelay());
-    if (isEof()) {
-        return false;
-    }
 
     current_position_ += std::streamoff(sizeof(VALUE_TYPE));
     setPosition();
-    return true;
 }
 
-bool FileTape::moveBackward() {
+void FileTape::moveBackward() {
     std::this_thread::sleep_for(config_->getMoveDelay());
-    if (current_position_ == 0) {
-        return false;
-    }
 
     current_position_ -= std::streamoff(sizeof(VALUE_TYPE));
     fStream_.clear();
     setPosition();
-    return true;
 }
 
 void FileTape::resetTape() {

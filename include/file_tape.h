@@ -3,11 +3,8 @@
 #include "config.h"
 #include "i_tape.h"
 
-#include <cstddef>
 #include <fstream>
-#include <istream>
 #include <memory>
-#include <optional>
 #include <string>
 
 namespace tape {
@@ -27,8 +24,8 @@ class FileTape : public ITape {
 
     virtual std::int32_t read() override;
     virtual void write(std::int32_t value) override;
-    virtual bool moveForward() override;
-    virtual bool moveBackward() override;
+    virtual void moveForward() override;
+    virtual void moveBackward() override;
     virtual void resetTape() override;
     virtual bool hasNext() override;
 
