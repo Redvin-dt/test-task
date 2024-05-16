@@ -1,0 +1,4 @@
+moveDelayMs: 0
+resetTapeDelayMs: 0
+readDelayMs: 0
+writeDelayMs: 0
