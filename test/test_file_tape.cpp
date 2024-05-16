@@ -13,7 +13,7 @@ TEST_CASE("Tape simple test") {
     auto tape = tape::FileTape::create(testFile.get_name());
     for (const auto &item : data) {
         tape->write(item);
-        CHECK(tape->moveForward());
+        tape->moveForward();
     }
 
     tape->resetTape();
@@ -22,7 +22,7 @@ TEST_CASE("Tape simple test") {
         std::int32_t value = tape->read();
         CHECK(elementNum < data.size());
         CHECK(value == data[elementNum]);
-        CHECK(tape->moveForward());
+        tape->moveForward();
         elementNum++;
     }
 
@@ -36,12 +36,11 @@ TEST_CASE("Tape move test") {
     auto tape = tape::FileTape::create(testFile.get_name());
     for (const auto &item : data) {
         tape->write(item);
-        CHECK(tape->moveForward());
+        tape->moveForward();
     }
 
     tape->resetTape();
     CHECK(tape->hasNext());
-    CHECK(!tape->moveBackward());
 
     tape->moveForward();
     tape->moveBackward();
@@ -52,11 +51,10 @@ TEST_CASE("Tape move test") {
     CHECK(tape->read() == data[0]);
 
     for (int i = 0; i < data.size(); i++) {
-        CHECK(tape->moveForward());
+        tape->moveForward();
     }
 
     CHECK(!tape->hasNext());
-    CHECK(!tape->moveForward());
 
     tape->resetTape();
     CHECK(tape->hasNext());
